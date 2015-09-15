@@ -11,4 +11,7 @@ public class TP1_Partition {
 	 * Valid Palindrome
 	 */
 	
+	
+	
+	
 }

@@ -2,10 +2,6 @@ package class4;
 
 public class TP1_TwoSum {
 
-	
-	
-	
-	
 	/*
 	 * 2 Sum 类
 	 * 3 Sum Closest
@@ -25,4 +21,13 @@ public class TP1_TwoSum {
 	 * Sort Letter by Case
 	 * Valid Palindrome
 	 */
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

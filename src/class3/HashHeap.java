@@ -2,21 +2,51 @@ package class3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import class3.HashMinHeap.Node;
+import java.util.Map.Entry;
 
 public class HashHeap {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		ArrayList<Integer> list = new ArrayList<Integer>();
-		System.out.println(list.get(0));
+		HashHeap minHeap = new HashHeap("min");
+		
+		minHeap.offer(1);
+		minHeap.offer(5);
+		minHeap.offer(10);
+		minHeap.offer(8);
+		minHeap.offer(1);
+		
+		minHeap.printHeap();
+		minHeap.printHash();
+		
+		System.out.println("size = " + minHeap.size());
+		
+		minHeap.poll();
+		System.out.println("------------------------");
+		minHeap.printHeap();
+		minHeap.printHash();
+		
+		
+		int head = minHeap.poll();
+		System.out.println("head = " + head);
+		System.out.println("------------------------");
+		minHeap.printHeap();
+		minHeap.printHash();
+		
+		
+		
+		
+		System.out.println("size = " + minHeap.size());
+	
+		
+		
+		
 	}
 
 	public ArrayList<Integer> heap;
 	private String mode;
 	private int size_t;
-	public HashMap<Integer, Node> hash;
+	public HashMap<Integer, Node> map;
 	
 	public class Node{
 		public Integer index;
@@ -37,7 +67,7 @@ public class HashHeap {
 	public HashHeap(String mod) {
 		this.heap = new ArrayList<Integer>();
 		this.mode = mod;
-		hash = new HashMap<Integer, Node>();
+		map = new HashMap<Integer, Node>();
 		size_t = 0;
 	}
 	
@@ -53,7 +83,7 @@ public class HashHeap {
 	}
 	
 	public boolean isEmpty() {
-		return heap.size() == 0;
+		return size_t == 0;
 	}
 	
 	public int parent(int id) {
@@ -76,14 +106,14 @@ public class HashHeap {
 	public void offer(int element) {
 		size_t ++;
 		// already in map
-		if (hash.containsKey(element)) {
-			Node node = hash.get(element);
-			hash.put(element, new Node(node.index, node.counter + 1));
+		if (map.containsKey(element)) {
+			Node node = map.get(element);
+			map.put(element, new Node(node.index, node.counter + 1));
 		} else { // not in map
 			heap.add(element);
-			hash.put(element, new Node(heap.size() - 1, 1));
-			shiftUp(heap.size() - 1);
+			map.put(element, new Node(heap.size() - 1, 1));
 		}
+		shiftUp(heap.size() - 1);
 	}
 	
 	
@@ -97,19 +127,20 @@ public class HashHeap {
 	 * if mode 1= 'min'[mode == 'max'], a has higher priority, return true;
 	 */
 	public boolean firstHasHigherPriority(int a, int b) {
-		if (a <= b) {
-			if (mode.equals("min")) {
+		if (mode.equals("min")) {
+			if (a < b) {
 				return true;
 			} else {
 				return false;
 			}
 		} else {
-			if (mode.equals("max")) {
-				return false;
-			} else {
+			if (a > b) {
 				return true;
+			} else {
+				return false;
 			}
 		}
+		
 	}
 	
 	public void swap(int indexA, int indexB) {
@@ -123,11 +154,11 @@ public class HashHeap {
 		heap.set(indexB, valA);
 		
 		
-		int cntA = hash.get(valA).counter;
-		int cntB = hash.get(valB).counter;
+		int cntA = map.get(valA).counter;
+		int cntB = map.get(valB).counter;
 		
-		hash.put(valA, new Node(indexB, cntA));
-		hash.put(valB, new Node(indexA, cntB));
+		map.put(valA, new Node(indexB, cntA));
+		map.put(valB, new Node(indexA, cntB));
 	}
 	
 	public Integer poll() {
@@ -137,56 +168,67 @@ public class HashHeap {
 		size_t --;
 		
 		Integer now = heap.get(0);
-		Node hashnow = hash.get(now);
+		Node hashnow = map.get(now);
 		if (hashnow.counter == 1) { // no duplicate, delete this val from heap and hash
 			swap(0, heap.size() - 1);
 			// delete from heap
 			heap.remove(heap.size() - 1);
+			
 			// delete from hash
-			hash.remove(now);
+			map.remove(now);
+		
 			// shiftDown the new head
-			shiftDown(0);
+			if (heap.size() > 0) {
+				shiftDown(0);
+			}
+			
 		} else {
 			// now has duplicates, only decreate the counter.
-			hash.put(now, new Node(0, hashnow.counter - 1));
+			map.put(now, new Node(0, hashnow.counter - 1));
 		}
 		return now;
 	}
 	
 	public boolean pollElement(int element) {
-		if (!hash.containsKey(element)) {
+		if (!map.containsKey(element)) {
 			return false;
 		}
-		Node node = hash.get(element);
+		size_t --;
+		Node node = map.get(element);
 		int index = node.index;
 		int count = node.counter;
 		if (index < 0 || index >= heap.size()) {
 			return false;
 		}
 		if (count > 1) {
-			hash.put(element, new Node(index, count - 1));
+			map.put(element, new Node(index, count - 1));
 		} else {
 			swap(index, heap.size() - 1);
-			size_t --;
+			
 			heap.remove(heap.size() - 1);
-			shiftDown(index);
+			map.remove(element);
+			if (heap.size() > index) {
+				shiftUp(index);
+				shiftDown(index);
+			}
+			
 		}
 		return true;
 	}
 	
 		
 	public void shiftDown(int index) {
-		while(index < size_t) {
+		while(index < heap.size()) {
 			int leftChildIndex = leftChild(index);
 			int rightChildIndex = rightChild(index);
 			
 			int min = index;
 			
-			if (leftChildIndex < size_t && firstHasHigherPriority(heap.get(leftChildIndex), heap.get(min))) {
+			if (leftChildIndex < heap.size() && firstHasHigherPriority(heap.get(leftChildIndex), heap.get(min))) {
 				min = leftChildIndex;
 			}
 			
-			if (rightChildIndex < size_t && firstHasHigherPriority(heap.get(rightChildIndex), heap.get(min))) {
+			if (rightChildIndex < heap.size() && firstHasHigherPriority(heap.get(rightChildIndex), heap.get(min))) {
 				min = rightChildIndex;
 			}
 			
@@ -199,19 +241,35 @@ public class HashHeap {
 		}
 	}
 	
+	
+	
 	public void shiftUp(int index) {
-		while(index >= 0) {
-			int partent = (index - 1)/2;
-			
-			if (partent >= 0 && firstHasHigherPriority(heap.get(index), heap.get(partent))) {
-				swap(index, partent);
-				index = partent;
-			} else {
+		if (index <= 0) {
+			return ;
+		}
+		while(index > 0) {  // here, index cannot be 0. 
+			int parent = (index - 1)/2;
+			if (!firstHasHigherPriority(heap.get(index), heap.get(parent))) {
 				break;
 			}
+			swap(index, parent);
+			index = parent;
 		}
 	}
 	
+	
+	public void printHeap() {
+		for(int i = 0; i< heap.size(); i ++) {
+			System.out.print(heap.get(i) + " ");
+		}
+		System.out.println();
+	}
+	
+	public void printHash() {
+		for(Entry<Integer, Node> entry: map.entrySet()) {
+			System.out.println(entry.getKey() + " : " + "[ " + entry.getValue().index +" : " +entry.getValue().counter + "]");
+		}
+	}
 	
 	
 	
